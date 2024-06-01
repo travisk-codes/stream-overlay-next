@@ -1,6 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { io } from 'socket.io-client'
+
+const socket = io('https://overlay.travisk.dev')
 
 const MarqueeItem = ({
   emojis,
@@ -21,6 +24,12 @@ export default function Overlay() {
   const [streamTitle, setStreamTitle] = useState('Stream title not fetched.')
   const [doingNow, setDoingNow] = useState('Working on stream overlay')
   const [doingLater, setDoingLater] = useState('Playing Cyberpunk 2077')
+  const [currentStatus, setCurrentStatus] = useState({
+	mood: 4,
+	anxiety: 4,
+	mental: 4,
+	physical: 3,
+  })
   
 
   const topMarqueeItems = [
@@ -46,7 +55,7 @@ export default function Overlay() {
 		{
 			emojis: ['📢'],
 			title: 'Announcement:',
-			text: 'Looking to hire a junior dev? https://hire.travisk.dev',
+			text: 'Looking to hire an intermediate dev? https://hire.travisk.dev',
 			color: 'red',
 		},
 		{
@@ -86,10 +95,15 @@ export default function Overlay() {
 		{
 			emojis: ['👩🏼', '🤔', '📊'],
 			title: 'Current Status',
-			text: '`Mood: ${currentStatus.mood}/6, Anxiety: ${currentStatus.anxiety}/6, Energy (Mental): ${currentStatus.mental}/6, Energy (Physical): ${currentStatus.physical}/6 `',
+			text: `Mood: ${currentStatus.mood}/6  Anxiety: ${currentStatus.anxiety}/6  Energy (Mental): ${currentStatus.mental}/6  Energy (Physical): ${currentStatus.physical}/6 `,
 			color: '#ff5080',
 		},
   ]
+
+  useEffect(() => {
+    socket.on('streamTitleChange', data => setStreamTitle(data))
+  })
+
   return (
     <main className='flex flex-col items-start justify-between'>
       <div id='marquee-top'>
