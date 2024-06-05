@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { io } from 'socket.io-client'
 
+import MusicTicker from './components/MusicTicker'
+
 const socket = io('https://overlay.travisk.dev')
 
 const MarqueeItem = ({
@@ -120,13 +122,16 @@ export default function Overlay() {
       </div>
 	  <div id='marquee-bottom'>
 		<span id='marquee-top-1' className='flex absolute bottom-0 mb-3 animate-marquee-bottom-1'>
-			{bottomMarqueeItems.map(item => <MarqueeItem {...item} key={item.text} />)}
+			{/* {bottomMarqueeItems.map(item => <MarqueeItem {...item} key={item.text} />)} */}
+			<MusicTicker />
 		</span>
 		<span id='marquee-top-2' className='flex absolute bottom-0 mb-3 animate-marquee-bottom-2'>
-			{bottomMarqueeItems.map(item => <MarqueeItem {...item} key={item.text} />)}
+			{/* {bottomMarqueeItems.map(item => <MarqueeItem {...item} key={item.text} />)} */}
+			<MusicTicker />
 		</span>
 		<span id='marquee-top-3' className='flex absolute bottom-0 mb-3 animate-marquee-bottom-3'>
-			{bottomMarqueeItems.map(item => <MarqueeItem {...item} key={item.text} />)}
+			{/* {bottomMarqueeItems.map(item => <MarqueeItem {...item} key={item.text} />)} */}
+			<MusicTicker />
 		</span>
       </div>
 	  <a id='twitch-login' href='https://overlay.travisk.dev/twitch-login'>Twitch Login</a>
