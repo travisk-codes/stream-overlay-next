@@ -129,6 +129,7 @@ export default function Overlay() {
 			{bottomMarqueeItems.map(item => <MarqueeItem {...item} key={item.text} />)}
 		</span>
       </div>
+	  <a id='twitch-login' href='https://overlay.travisk.dev/twitch-login'>Twitch Login</a>
     </main>
   )
 }
