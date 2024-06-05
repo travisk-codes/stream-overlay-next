@@ -51,3 +51,19 @@ export const TickerItems = ({ items, children }) => (
 		))}
 	</>
 )
+
+export const MarqueeItem = ({
+	emojis,
+	title,
+	color,
+	text,
+	key,
+  }) => (
+	<span key={key} className="marquee-item text-lg whitespace-nowrap pr-10">
+	  { emojis && emojis[0] ? <span className="marquee-item-emoji pr-1">{emojis[0]}</span> : null }
+	  { title ? <span className='marquee-item-title pr-1' style={ color ? { color } : { color: 'white' } }>{title}</span> : null }
+	  { emojis && emojis[1] ? <span className="marquee-item-emoji pr-1">{emojis[1]}</span> : null }
+	  { text ? <span className='marquee-item-text'>{text}</span> : null }
+	</span>
+  )
+  

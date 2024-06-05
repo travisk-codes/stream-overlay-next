@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import queryString from 'query-string'
-import TickerItem from './TickerItem'
+import { MarqueeItem } from './TickerItem'
 
 const MusicTicker = () => {
 	const [currentMusic, setCurrentMusic] = useState({
@@ -91,7 +91,7 @@ const MusicTicker = () => {
 	]
 
 	return (
-		<TickerItem
+		<MarqueeItem
 			emojis={['🎵', '🎵']}
 			title='Now Playing'
 			text={

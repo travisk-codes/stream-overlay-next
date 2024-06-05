@@ -34,6 +34,14 @@ body {
   right: 100px;
 }
 
+#twitch-login {
+  color: purple;
+}
+
+#spotify-login {
+  color: lime;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

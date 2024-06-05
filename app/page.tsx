@@ -4,23 +4,9 @@ import { useState, useEffect } from 'react'
 import { io } from 'socket.io-client'
 
 import MusicTicker from './components/MusicTicker'
+import { MarqueeItem } from './components/TickerItem'
 
 const socket = io('https://overlay.travisk.dev')
-
-const MarqueeItem = ({
-  emojis,
-  title,
-  color,
-  text,
-  key,
-}: any) => (
-  <span key={key} className="marquee-item text-lg whitespace-nowrap pr-10">
-    { emojis && emojis[0] ? <span className="marquee-item-emoji pr-1">{emojis[0]}</span> : null }
-    { title ? <span className='marquee-item-title pr-1' style={ color ? { color } : { color: 'white' } }>{title}</span> : null }
-    { emojis && emojis[1] ? <span className="marquee-item-emoji pr-1">{emojis[1]}</span> : null }
-    { text ? <span className='marquee-item-text'>{text}</span> : null }
-  </span>
-)
 
 export default function Overlay() {
   const [streamTitle, setStreamTitle] = useState('Stream title not fetched.')
