@@ -109,32 +109,35 @@ export default function Overlay() {
   return (
     <main className='flex flex-col items-start justify-between'>
       <div id='marquee-top'>
-		{/* Cannot loop because programmatic string interp breaks the tailwind animation */}
-		<span id='marquee-top-1' className='flex absolute top-0 mt-3 animate-marquee-top-1'>
-			{topMarqueeItems.map(item => <MarqueeItem {...item} key={item.text} />)}
-		</span>
-		<span id='marquee-top-2' className='flex absolute top-0 mt-3 animate-marquee-top-2'>
-			{topMarqueeItems.map(item => <MarqueeItem {...item} key={item.text} />)}
-		</span>
-		<span id='marquee-top-3' className='flex absolute top-0 mt-3 animate-marquee-top-3'>
-			{topMarqueeItems.map(item => <MarqueeItem {...item} key={item.text} />)}
-		</span>
+				{/* Cannot loop because programmatic string interp breaks the tailwind animation */}
+				<span id='marquee-top-1' className='flex absolute top-0 mt-3 animate-marquee-top-1'>
+					{topMarqueeItems.map(item => <MarqueeItem {...item} key={item.text} />)}
+				</span>
+				<span id='marquee-top-2' className='flex absolute top-0 mt-3 animate-marquee-top-2'>
+					{topMarqueeItems.map(item => <MarqueeItem {...item} key={item.text} />)}
+				</span>
+				<span id='marquee-top-3' className='flex absolute top-0 mt-3 animate-marquee-top-3'>
+					{topMarqueeItems.map(item => <MarqueeItem {...item} key={item.text} />)}
+				</span>
       </div>
-	  <div id='marquee-bottom'>
-		<span id='marquee-top-1' className='flex absolute bottom-0 mb-3 animate-marquee-bottom-1'>
-			{/* {bottomMarqueeItems.map(item => <MarqueeItem {...item} key={item.text} />)} */}
-			<MusicTicker />
-		</span>
-		<span id='marquee-top-2' className='flex absolute bottom-0 mb-3 animate-marquee-bottom-2'>
-			{/* {bottomMarqueeItems.map(item => <MarqueeItem {...item} key={item.text} />)} */}
-			<MusicTicker />
-		</span>
-		<span id='marquee-top-3' className='flex absolute bottom-0 mb-3 animate-marquee-bottom-3'>
-			{/* {bottomMarqueeItems.map(item => <MarqueeItem {...item} key={item.text} />)} */}
-			<MusicTicker />
-		</span>
+	  	<div id='marquee-bottom'>
+				<span id='marquee-top-1' className='flex absolute bottom-0 mb-3 animate-marquee-bottom-1'>
+					{bottomMarqueeItems.map(item => <MarqueeItem {...item} key={item.text} />)}
+					<MusicTicker />
+				</span>
+				<span id='marquee-top-2' className='flex absolute bottom-0 mb-3 animate-marquee-bottom-2'>
+					{bottomMarqueeItems.map(item => <MarqueeItem {...item} key={item.text} />)}
+					<MusicTicker />
+				</span>
+				<span id='marquee-top-3' className='flex absolute bottom-0 mb-3 animate-marquee-bottom-3'>
+					{bottomMarqueeItems.map(item => <MarqueeItem {...item} key={item.text} />)}
+					<MusicTicker />
+				</span>
       </div>
-	  <a id='twitch-login' href='https://overlay.travisk.dev/twitch-login'>Twitch Login</a>
+			<div id='logins'>
+				<a id='twitch-login' href='https://overlay.travisk.dev/twitch-login'>Twitch Login</a>
+				<a id='spotify-login' href='https://overlay.travisk.dev/login'>Spotify Login</a>
+			</div>
     </main>
   )
 }

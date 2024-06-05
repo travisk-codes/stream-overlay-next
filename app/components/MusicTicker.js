@@ -66,7 +66,7 @@ const MusicTicker = () => {
 	const fetchNewAccessToken = async () => {
 		try {
 			const resp = await fetch(
-				'https://overlay.travisk.info/refresh_token?refresh_token=' +
+				'https://overlay.travisk.dev/refresh_token?refresh_token=' +
 					refreshToken,
 			)
 			const json = await resp.json()

@@ -8,12 +8,12 @@ const cookieParser = require('cookie-parser')
 const request = require('request')
 const redis = require('redis')
 
-const { ApiClient } = require('twitch')
-const { StaticAuthProvider } = require('twitch-auth')
-const HelixFollow = require('twitch').HelixFollow
-const HelixStream = require('twitch').HelixStream
-const HelixSubscriptionEvent = require('twitch').HelixSubscriptionEvent
-const { LegacyAdapter, WebHookListener } = require('twitch-webhooks')
+const { ApiClient } = require('@twurple/api')
+const { StaticAuthProvider } = require('@twurple/auth')
+const HelixFollow = require('@twurple/api').HelixFollow
+const HelixStream = require('@twurple/api').HelixStream
+const HelixSubscriptionEvent = require('@twurple/api').HelixSubscriptionEvent
+const { ReverseProxyAdapter, EventSubHttpListener } = require('@twurple/eventsub-http')
 
 const { userId, clientId, secret } = require('./config')
 
@@ -76,14 +76,14 @@ app.get('/twitch-callback', (req, res) => {
 	})
 })
 
-const webhookConfig = new LegacyAdapter({
+const webhookConfig = new ReverseProxyAdapter({
 	hostName: 'twitchwebhook.travisk.info',
 	port: 8090,
 	reverseProxy: { port: 443, ssl: true },
 })
 async function getWebhookSubscriptions(client) {
 	try {
-		const listener = new WebHookListener(client, webhookConfig)
+		const listener = new EventSubHttpListener(client, webhookConfig)
 		listener.listen()
 		const streamChangeSubscription = await listener.subscribeToStreamChanges(
 			userId,

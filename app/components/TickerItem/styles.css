@@ -17,6 +17,7 @@
 	margin: 0 5px;
 	padding-right: 1px; /* prevent text shadow wrap */
 	position: relative;
+	white-space: nowrap;
 }
 
 .ticker-item__text:after,
