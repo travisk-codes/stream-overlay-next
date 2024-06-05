@@ -15,8 +15,8 @@ const HelixStream = require('twitch').HelixStream
 const HelixSubscriptionEvent = require('twitch').HelixSubscriptionEvent
 const { LegacyAdapter, WebHookListener } = require('twitch-webhooks')
 
-const { userId, clientId, secret, accessToken } = require('./config')
-const { clientSecret } = require('./spotifySecrets')
+const { userId, clientId, secret } = require('./config')
+
 let twitchAccessToken, twitchRefreshToken
 
 const app = express()
@@ -32,7 +32,9 @@ let redisClient = redis.createClient({
 	password: process.env.REDIS_PASS,
 })
 
-app.use(express.static(path.join(__dirname, 'build')))
+redisClient.connect()
+
+app.use(express.static(path.join(__dirname, 'out')))
 app.use(cors())
 app.use(cookieParser())
 
@@ -40,7 +42,7 @@ app.get('/twitch-login', function (_, res) {
 	const url = 'https://id.twitch.tv/oauth2/authorize?'
 	const queryParams = {
 		client_id: clientId,
-		redirect_uri: 'https://overlayserver.travisk.info/twitch-callback',
+		redirect_uri: 'https://overlay.travisk.dev/twitch-callback',
 		response_type: 'code',
 		scope: 'channel:read:subscriptions',
 	}
@@ -58,7 +60,7 @@ app.get('/twitch-callback', (req, res) => {
 			client_secret: secret,
 			code: code,
 			grant_type: 'authorization_code',
-			redirect_uri: 'https://overlayserver.travisk.info/twitch-callback',
+			redirect_uri: 'https://overlay.travisk.dev/twitch-callback',
 		},
 	}
 
