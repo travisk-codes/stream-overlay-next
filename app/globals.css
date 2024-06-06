@@ -28,10 +28,29 @@ body {
   text-shadow: 1px 1px 0px black, -1px -1px 0px black, 1px -1px 0px black, -1px 1px 0px black;
 }
 
+#current-status-fields {
+  position: fixed;
+  bottom: 150px;
+  right: 100px;
+  color: black;
+
+}
+
+#current-status-fields input {
+  border: 1px solid grey;
+  margin: 1px;
+  padding: 1px;
+  width: 30px;
+}
+
 #logins {
   position: fixed;
   bottom: 100px;
   right: 100px;
+}
+
+#logins > * {
+  padding: 5px;
 }
 
 #twitch-login {

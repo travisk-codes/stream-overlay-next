@@ -11,8 +11,8 @@ const socket = io('https://overlay.travisk.dev')
 export default function Overlay() {
   const [streamTitle, setStreamTitle] = useState('Stream title not fetched.')
   const [followers, setFollowers] = useState('bottomTextFollowersNotFetched')
-  const [doingNow, setDoingNow] = useState('Working on stream overlay')
-  const [doingLater, setDoingLater] = useState('Playing Cyberpunk 2077')
+  const [doingNow, setDoingNow] = useState('Doing now not set')
+  const [doingLater, setDoingLater] = useState('Doing later not set')
   const [currentStatus, setCurrentStatus] = useState({
 	mood: 0,
 	anxiety: 0,
@@ -92,7 +92,23 @@ export default function Overlay() {
   useEffect(() => {
     socket.on('streamTitleChange', data => setStreamTitle(data))
 	socket.on('follows', data => setFollowers(data))
-  })
+	socket.on('mood', data => setCurrentStatus({
+		...currentStatus,
+		mood: data,
+	}))
+	socket.on('anxiety', data => setCurrentStatus({
+		...currentStatus,
+		anxiety: data,
+	}))
+	socket.on('energy-physical', data => setCurrentStatus({
+		...currentStatus,
+		physical: data,
+	}))
+	socket.on('energy-mental', data => setCurrentStatus({
+		...currentStatus,
+		mental: data,
+	}))
+  }, [])
 
   return (
     <main className='flex flex-col items-start justify-between'>
@@ -125,6 +141,29 @@ export default function Overlay() {
 			<div id='logins'>
 				<a id='twitch-login' href='https://overlay.travisk.dev/twitch-login'>Twitch Login</a>
 				<a id='spotify-login' href='https://overlay.travisk.dev/login'>Spotify Login</a>
+			</div>
+			<div id='current-status-fields'>
+				<input type='number' min='1' max='6' id='mood' value={currentStatus.mood} onChange={e => {
+					const mood = Number(e.target.value)
+					setCurrentStatus({ ...currentStatus, mood })
+					console.log('emitting mood')
+					socket.emit('mood', mood)
+				}} />
+				<input type='number' min='1' max='6' id='anxiety' value={currentStatus.anxiety} onChange={e => {
+					const anxiety = Number(e.target.value)
+					setCurrentStatus({ ...currentStatus, anxiety })
+					socket.emit('anxiety', anxiety)
+				}} />
+				<input type='number' min='1' max='6' id='mental' value={currentStatus.mental} onChange={e => {
+					const mental = Number(e.target.value)
+					setCurrentStatus({ ...currentStatus, mental })
+					socket.emit('energy-mental', mental)
+				}} />
+				<input type='number' min='1' max='6' id='physical' value={currentStatus.physical} onChange={e => {
+					const physical = Number(e.target.value)
+					setCurrentStatus({ ...currentStatus, physical })
+					socket.emit('energy-physical', physical)
+				}} />
 			</div>
     </main>
   )
