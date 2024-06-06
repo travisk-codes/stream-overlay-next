@@ -51,7 +51,7 @@ app.get('/twitch-login', function (_, res) {
 		client_id: clientId,
 		redirect_uri: 'https://overlay.travisk.dev/twitch-callback',
 		response_type: 'code',
-		scope: 'channel:read:subscriptions channel:manage:broadcast',
+		scope: 'channel:read:subscriptions channel:manage:broadcast moderator:read:followers',
 	}
 
 	//res.header('Access-Control-Allow-Origin', '*')
@@ -126,17 +126,18 @@ async function getWebhookSubscriptions(client) {
 			userId,
 			onStreamChange,
 		)
-		// const followsSubscription = await listener.subscribeToFollowsToUser(
-		// 	userId,
-		// 	onNewFollow,
-		// )
+		const followsSubscription = await listener.onChannelFollow(
+			userId,
+			userId,
+			onNewFollow,
+		)
 		// const subscriptionsSubscription = await listener.subscribeToSubscriptionEvents(
 		// 	userId,
 		// 	onSubscriptionEvent,
 		// )
 		return [
 			streamChangeSubscription,
-			// followsSubscription,
+			followsSubscription,
 			// subscriptionsSubscription,
 		]
 	} catch (e) {
@@ -245,13 +246,16 @@ socket.on('connection', async (clientSocket) => {
 		)
 
 		console.log('Socket connection established with client')
-		// const paginatedFollows = twitchClient.helix.users.getFollowsPaginated({
-		// 	followedUser: userId,
-		// })
-		// follows = await paginatedFollows.getAll()
-		// clientSocket.emit('follows', follows)
+		const follows = await twitchClient.channels.getChannelFollowers(userId)
+		followsString = ''
+		follows.data.forEach((follow, i) => {
+			if (i > 2) return
+			followsString += `${follow.userDisplayName} • `
+		})
+		followsString = followsString.slice(0, -2)
+		clientSocket.emit('follows', followsString)
 
-		// const subscriptions = await twitchClient.helix.subscriptions.getSubscriptionEventsForBroadcaster(
+		// const subscriptions = await twitchClient.subscriptions.getSubscriptionsPaginated(
 		// 	userId,
 		// )
 		// //subscriptions = await paginatedSubscriptions.getAll()

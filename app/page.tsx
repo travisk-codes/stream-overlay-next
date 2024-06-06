@@ -10,13 +10,14 @@ const socket = io('https://overlay.travisk.dev')
 
 export default function Overlay() {
   const [streamTitle, setStreamTitle] = useState('Stream title not fetched.')
+  const [followers, setFollowers] = useState('bottomTextFollowersNotFetched')
   const [doingNow, setDoingNow] = useState('Working on stream overlay')
   const [doingLater, setDoingLater] = useState('Playing Cyberpunk 2077')
   const [currentStatus, setCurrentStatus] = useState({
-	mood: 4,
-	anxiety: 4,
-	mental: 4,
-	physical: 3,
+	mood: 0,
+	anxiety: 0,
+	mental: 0,
+	physical: 0,
   })
   
 
@@ -71,7 +72,7 @@ export default function Overlay() {
 		{
 			emojis: ['💜', '💜'],
 			title: 'Latest Followers',
-			text: 'bottomTextFollowersNotFetched',
+			text: followers,
 			color: 'violet',
 		},
 		{
@@ -90,6 +91,7 @@ export default function Overlay() {
 
   useEffect(() => {
     socket.on('streamTitleChange', data => setStreamTitle(data))
+	socket.on('follows', data => setFollowers(data))
   })
 
   return (
