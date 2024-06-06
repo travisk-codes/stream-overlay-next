@@ -9,7 +9,7 @@ const request = require('request')
 const redis = require('redis')
 
 const { ApiClient } = require('@twurple/api')
-const { StaticAuthProvider } = require('@twurple/auth')
+const { RefreshingAuthProvider, exchangeCode, StaticAuthProvider, AppTokenAuthProvider } = require('@twurple/auth')
 const HelixFollow = require('@twurple/api').HelixFollow
 const HelixStream = require('@twurple/api').HelixStream
 const HelixSubscriptionEvent = require('@twurple/api').HelixSubscriptionEvent
@@ -17,14 +17,21 @@ const { ReverseProxyAdapter, EventSubHttpListener } = require('@twurple/eventsub
 
 const { userId, clientId, secret } = require('./config')
 
-let twitchAccessToken, twitchRefreshToken
+let twitchAccessToken, twitchRefreshToken, twitchToken, authProvider, twitchClient
 
 const app = express()
 const server = http.createServer(app)
 const socket = io(server, { origins: '*:*', cookie: false })
 
-//const authProvider = new StaticAuthProvider(clientId, accessToken)
-let twitchClient //const twitchClient = new TwitchClient({ authProvider })
+// const authProvider = new RefreshingAuthProvider({ clientId, secret })
+// const twitchClient = new ApiClient({ authProvider })
+
+
+// const authProvider = new RefreshingAuthProvider({
+// 	clientId,
+// 	secret,
+// })
+
 
 let redisClient = redis.createClient({
 	port: 6379,
@@ -44,7 +51,7 @@ app.get('/twitch-login', function (_, res) {
 		client_id: clientId,
 		redirect_uri: 'https://overlay.travisk.dev/twitch-callback',
 		response_type: 'code',
-		scope: 'channel:read:subscriptions',
+		scope: 'channel:read:subscriptions channel:manage:broadcast',
 	}
 
 	//res.header('Access-Control-Allow-Origin', '*')
@@ -53,6 +60,8 @@ app.get('/twitch-login', function (_, res) {
 
 app.get('/twitch-callback', (req, res) => {
 	const code = req.query.code
+	// twitchToken = await exchangeCode(clientId, secret, code, 'https://overlay.travisk.dev/twitch-callback')
+	// await authProvider.addUser(userId, twitchToken)
 	const authOptions = {
 		url: 'https://id.twitch.tv/oauth2/token?',
 		form: {
@@ -64,50 +73,79 @@ app.get('/twitch-callback', (req, res) => {
 		},
 	}
 
-	request.post(authOptions, (err, response, body) => {
+	request.post(authOptions, async (err, response, body) => {
 		body = JSON.parse(body)
 		twitchAccessToken = body.access_token
 		twitchRefreshToken = body.refresh_token
-		const authProvider = new StaticAuthProvider(clientId, twitchAccessToken)
+		authProvider = new StaticAuthProvider(clientId, twitchAccessToken)
 		twitchClient = new ApiClient({ authProvider })
-		console.log(twitchClient)
-		const webhookSubscriptions = getWebhookSubscriptions(twitchClient)
+		// twitchToken = {
+		// 	accessToken: twitchAccessToken,
+		// 	refreshToken: twitchRefreshToken,
+		// 	expiresIn: 0,
+		// 	obtainmentTimestamp: 0,
+		// }
+		// const authProvider = new RefreshingAuthProvider({ clientId, secret })
+		// await authProvider.addUser(userId, twitchToken)
+		// authProvider.onRefresh(async (userId, newToken) => {
+		// 	twitchToken = newToken
+		// })
+		// const twitchClient = new ApiClient({ authProvider })
+		// console.log('stream:', twitchClient.streams.getStreamByUserId(userId))
+		// await getWebhookSubscriptions(twitchClient)
+
 		res.redirect('/#')
 	})
 })
 
 const webhookConfig = new ReverseProxyAdapter({
-	hostName: 'twitchwebhook.travisk.info',
-	port: 8090,
-	reverseProxy: { port: 443, ssl: true },
+	hostName: 'twitchwebhook.travisk.dev',
+	port: 7783,
 })
+
+const generateRandomString = (length) => {
+	let text = ''
+	let possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+	for (let i = 0; i < length; i++) {
+		let randomIndex = Math.floor(Math.random() * possible.length)
+		text += possible.charAt(randomIndex)
+	}
+	return text
+}
+const fixedStringSecret = generateRandomString(32)
+
 async function getWebhookSubscriptions(client) {
 	try {
-		const listener = new EventSubHttpListener(client, webhookConfig)
-		listener.listen()
-		const streamChangeSubscription = await listener.subscribeToStreamChanges(
+		const listener = new EventSubHttpListener({
+			apiClient: client,
+			adapter: webhookConfig,
+			secret: fixedStringSecret,
+		})
+		listener.start()
+		const streamChangeSubscription = await listener.onChannelUpdate(
 			userId,
 			onStreamChange,
 		)
-		const followsSubscription = await listener.subscribeToFollowsToUser(
-			userId,
-			onNewFollow,
-		)
-		const subscriptionsSubscription = await listener.subscribeToSubscriptionEvents(
-			userId,
-			onSubscriptionEvent,
-		)
+		// const followsSubscription = await listener.subscribeToFollowsToUser(
+		// 	userId,
+		// 	onNewFollow,
+		// )
+		// const subscriptionsSubscription = await listener.subscribeToSubscriptionEvents(
+		// 	userId,
+		// 	onSubscriptionEvent,
+		// )
 		return [
 			streamChangeSubscription,
-			followsSubscription,
-			subscriptionsSubscription,
+			// followsSubscription,
+			// subscriptionsSubscription,
 		]
 	} catch (e) {
 		console.log('getWebhookSubscriptions error', e.name, e.message)
 	}
 }
 
-async function onStreamChange(stream = HelixStream) {
+async function onStreamChange(stream) {
+	console.log('onStreamChange')
 	if (stream) {
 		console.log('stream title changed')
 		socket.emit('streamTitleChange', stream.title)
@@ -206,21 +244,22 @@ socket.on('connection', async (clientSocket) => {
 			}),
 		)
 
-		console.log('webclientSocket connection established with client')
-		const paginatedFollows = twitchClient.helix.users.getFollowsPaginated({
-			followedUser: userId,
-		})
-		follows = await paginatedFollows.getAll()
-		clientSocket.emit('follows', follows)
+		console.log('Socket connection established with client')
+		// const paginatedFollows = twitchClient.helix.users.getFollowsPaginated({
+		// 	followedUser: userId,
+		// })
+		// follows = await paginatedFollows.getAll()
+		// clientSocket.emit('follows', follows)
 
-		const subscriptions = await twitchClient.helix.subscriptions.getSubscriptionEventsForBroadcaster(
-			userId,
-		)
-		//subscriptions = await paginatedSubscriptions.getAll()
-		console.log('subscriptions:', subscriptions)
-		clientSocket.emit('subscriptions', subscriptions)
+		// const subscriptions = await twitchClient.helix.subscriptions.getSubscriptionEventsForBroadcaster(
+		// 	userId,
+		// )
+		// //subscriptions = await paginatedSubscriptions.getAll()
+		// console.log('subscriptions:', subscriptions)
+		// clientSocket.emit('subscriptions', subscriptions)
 
-		const stream = await twitchClient.helix.streams.getStreamByUserId(userId)
+		const stream = await twitchClient.streams.getStreamByUserId(userId)
+		console.log(stream)
 		if (stream) {
 			clientSocket.emit('streamTitleChange', stream.title)
 		}
@@ -235,7 +274,7 @@ socket.on('connection', async (clientSocket) => {
 			}
 		})
 	} catch (e) {
-		console.log('socket.on connection: ', e.name, e.message)
+		console.log('socket.on connection', e.name, e.message)
 	}
 })
 
