@@ -138,33 +138,45 @@ export default function Overlay() {
 					<MusicTicker />
 				</span>
       </div>
-			<div id='logins'>
-				<a id='twitch-login' href='https://overlay.homaro.co/twitch-login'>Twitch Login</a>
-				<a id='spotify-login' href='https://overlay.homaro.co/login'>Spotify Login</a>
-			</div>
-			<div id='current-status-fields'>
-				<input type='number' min='1' max='6' id='mood' value={currentStatus.mood} onChange={e => {
-					console.log('moodOnChange')
-					const mood = Number(e.target.value)
-					setCurrentStatus({ ...currentStatus, mood })
-					console.log('emitting mood')
-					socket.emit('mood', mood)
-				}} />
-				<input type='number' min='1' max='6' id='anxiety' value={currentStatus.anxiety} onChange={e => {
-					const anxiety = Number(e.target.value)
-					setCurrentStatus({ ...currentStatus, anxiety })
-					socket.emit('anxiety', anxiety)
-				}} />
-				<input type='number' min='1' max='6' id='mental' value={currentStatus.mental} onChange={e => {
-					const mental = Number(e.target.value)
-					setCurrentStatus({ ...currentStatus, mental })
-					socket.emit('energy-mental', mental)
-				}} />
-				<input type='number' min='1' max='6' id='physical' value={currentStatus.physical} onChange={e => {
-					const physical = Number(e.target.value)
-					setCurrentStatus({ ...currentStatus, physical })
-					socket.emit('energy-physical', physical)
-				}} />
+			<div id='controls'>
+				<div id='logins'>
+					<a id='twitch-login' href='https://overlay.travisk.dev/twitch-login'>Twitch Login</a>
+					<a id='spotify-login' href='https://overlay.travisk.dev/login'>Spotify Login</a>
+				</div>
+				<div id='current-status-fields'>
+					<input type='number' min='1' max='6' id='mood' value={currentStatus.mood} onChange={e => {
+						const mood = Number(e.target.value)
+						setCurrentStatus({ ...currentStatus, mood })
+						socket.emit('mood', mood)
+					}} />
+					<input type='number' min='1' max='6' id='anxiety' value={currentStatus.anxiety} onChange={e => {
+						const anxiety = Number(e.target.value)
+						setCurrentStatus({ ...currentStatus, anxiety })
+						socket.emit('anxiety', anxiety)
+					}} />
+					<input type='number' min='1' max='6' id='mental' value={currentStatus.mental} onChange={e => {
+						const mental = Number(e.target.value)
+						setCurrentStatus({ ...currentStatus, mental })
+						socket.emit('energy-mental', mental)
+					}} />
+					<input type='number' min='1' max='6' id='physical' value={currentStatus.physical} onChange={e => {
+						const physical = Number(e.target.value)
+						setCurrentStatus({ ...currentStatus, physical })
+						socket.emit('energy-physical', physical)
+					}} />
+				</div>
+				<div id='doing-now-container'>
+					<input id='doing-now' placeholder='Doing now' value={doingNow} onChange={e => {
+						setDoingNow(e.target.value)
+						socket.emit('doing-now', e.target.value)
+					}}/>
+				</div>
+				<div id='doing-later-container'>
+					<input id='doing-later' placeholder='Doing later' value={doingLater} onChange={e => {
+						setDoingLater(e.target.value)
+						socket.emit('doing-later', e.target.value)
+					}}/>
+				</div>
 			</div>
     </main>
   )
