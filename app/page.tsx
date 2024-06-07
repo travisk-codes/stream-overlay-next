@@ -91,23 +91,25 @@ export default function Overlay() {
 
   useEffect(() => {
     socket.on('streamTitleChange', data => setStreamTitle(data))
-	socket.on('follows', data => setFollowers(data))
-	socket.on('mood', data => setCurrentStatus(currentStatus => ({
-		...currentStatus,
-		mood: data,
-	})))
-	socket.on('anxiety', data => setCurrentStatus(currentStatus => ({
-		...currentStatus,
-		anxiety: data,
-	})))
-	socket.on('energy-physical', data => setCurrentStatus(currentStatus => ({
-		...currentStatus,
-		physical: data,
-	})))
-	socket.on('energy-mental', data => setCurrentStatus( currentStatus => ({
-		...currentStatus,
-		mental: data,
-	})))
+		socket.on('follows', data => setFollowers(data))
+		socket.on('mood', data => setCurrentStatus(currentStatus => ({
+			...currentStatus,
+			mood: data,
+		})))
+		socket.on('anxiety', data => setCurrentStatus(currentStatus => ({
+			...currentStatus,
+			anxiety: data,
+		})))
+		socket.on('energy-physical', data => setCurrentStatus(currentStatus => ({
+			...currentStatus,
+			physical: data,
+		})))
+		socket.on('energy-mental', data => setCurrentStatus( currentStatus => ({
+			...currentStatus,
+			mental: data,
+		})))
+		socket.on('doing-now', data => setDoingNow(data))
+		socket.on('doing-later', data => setDoingLater(data))
   }, [])
 
   return (
