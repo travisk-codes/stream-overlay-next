@@ -6,7 +6,7 @@ import { io } from 'socket.io-client'
 import MusicTicker from './components/MusicTicker'
 import { MarqueeItem } from './components/TickerItem'
 
-const socket = io('https://overlay.travisk.dev')
+const socket = io('https://overlay.homaro.co')
 
 export default function Overlay() {
   const [streamTitle, setStreamTitle] = useState('Stream title not fetched.')
@@ -92,22 +92,22 @@ export default function Overlay() {
   useEffect(() => {
     socket.on('streamTitleChange', data => setStreamTitle(data))
 	socket.on('follows', data => setFollowers(data))
-	socket.on('mood', data => setCurrentStatus({
+	socket.on('mood', data => setCurrentStatus(currentStatus => ({
 		...currentStatus,
 		mood: data,
-	}))
-	socket.on('anxiety', data => setCurrentStatus({
+	})))
+	socket.on('anxiety', data => setCurrentStatus(currentStatus => ({
 		...currentStatus,
 		anxiety: data,
-	}))
-	socket.on('energy-physical', data => setCurrentStatus({
+	})))
+	socket.on('energy-physical', data => setCurrentStatus(currentStatus => ({
 		...currentStatus,
 		physical: data,
-	}))
-	socket.on('energy-mental', data => setCurrentStatus({
+	})))
+	socket.on('energy-mental', data => setCurrentStatus( currentStatus => ({
 		...currentStatus,
 		mental: data,
-	}))
+	})))
   }, [])
 
   return (
@@ -139,11 +139,12 @@ export default function Overlay() {
 				</span>
       </div>
 			<div id='logins'>
-				<a id='twitch-login' href='https://overlay.travisk.dev/twitch-login'>Twitch Login</a>
-				<a id='spotify-login' href='https://overlay.travisk.dev/login'>Spotify Login</a>
+				<a id='twitch-login' href='https://overlay.homaro.co/twitch-login'>Twitch Login</a>
+				<a id='spotify-login' href='https://overlay.homaro.co/login'>Spotify Login</a>
 			</div>
 			<div id='current-status-fields'>
 				<input type='number' min='1' max='6' id='mood' value={currentStatus.mood} onChange={e => {
+					console.log('moodOnChange')
 					const mood = Number(e.target.value)
 					setCurrentStatus({ ...currentStatus, mood })
 					console.log('emitting mood')

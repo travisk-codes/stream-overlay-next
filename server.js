@@ -1,3 +1,6 @@
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+
 const express = require('express')
 const http = require('http')
 const io = require('socket.io')
@@ -15,31 +18,23 @@ const HelixStream = require('@twurple/api').HelixStream
 const HelixSubscriptionEvent = require('@twurple/api').HelixSubscriptionEvent
 const { ReverseProxyAdapter, EventSubHttpListener } = require('@twurple/eventsub-http')
 
-const { userId, clientId, secret } = require('./config')
+import { userId, clientId, secret } from './config.js'
+import { fileURLToPath } from 'url'
 
 let twitchAccessToken, twitchRefreshToken, twitchToken, authProvider, twitchClient
 
 const app = express()
 const server = http.createServer(app)
-const socket = io(server, { origins: '*:*', cookie: false })
+const socket = io(server, { cors: { origin: ['http://localhost:3000'] }})
 
-// const authProvider = new RefreshingAuthProvider({ clientId, secret })
-// const twitchClient = new ApiClient({ authProvider })
-
-
-// const authProvider = new RefreshingAuthProvider({
-// 	clientId,
-// 	secret,
-// })
-
-
-let redisClient = redis.createClient({
+let redisClient = await redis.createClient({
 	port: 6379,
 	host: 'localhost',
 	password: process.env.REDIS_PASS,
-})
+}).on('error', err => console.log('Redis Client Error', err)).connect()
 
-redisClient.connect()
+const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
+const __dirname = path.dirname(__filename); // get the name of the directory
 
 app.use(express.static(path.join(__dirname, 'out')))
 app.use(cors())
@@ -49,7 +44,7 @@ app.get('/twitch-login', function (_, res) {
 	const url = 'https://id.twitch.tv/oauth2/authorize?'
 	const queryParams = {
 		client_id: clientId,
-		redirect_uri: 'https://overlay.travisk.dev/twitch-callback',
+		redirect_uri: 'https://overlay.homaro.co/twitch-callback',
 		response_type: 'code',
 		scope: 'channel:read:subscriptions channel:manage:broadcast moderator:read:followers',
 	}
@@ -69,7 +64,7 @@ app.get('/twitch-callback', (req, res) => {
 			client_secret: secret,
 			code: code,
 			grant_type: 'authorization_code',
-			redirect_uri: 'https://overlay.travisk.dev/twitch-callback',
+			redirect_uri: 'https://overlay.homaro.co/twitch-callback',
 		},
 	}
 
@@ -99,7 +94,7 @@ app.get('/twitch-callback', (req, res) => {
 })
 
 const webhookConfig = new ReverseProxyAdapter({
-	hostName: 'twitchwebhook.travisk.dev',
+	hostName: 'twitchwebhook.homaro.co',
 	port: 7783,
 })
 
@@ -182,72 +177,42 @@ const onSubscriptionEvent = async (subscription = HelixSubscriptionEvent) => {
 }
 
 socket.on('connection', async (clientSocket) => {
+	console.log('Socket connection established with client')
+	clientSocket.on('mood', async data => {
+		await redisClient.set('mood', data)
+	})
+	clientSocket.on('anxiety', async data => {
+		await redisClient.set('anxiety', data)
+	})
+	clientSocket.on('energy-mental', async data => {
+		await redisClient.set('energy-mental', data)
+	})
+	clientSocket.on('energy-physical', async data => {
+		await redisClient.set('energy-physical', data)
+	})
+	clientSocket.on('doing-now', async data => {
+		await redisClient.set('doing-now', data)
+	})
+	clientSocket.on('doing-later', async data => {
+		await redisClient.set('doing-later', data)
+	})
+
 	try {
-		redisClient.get('doing-now', (err, value) => {
-			if (err) throw new Error(err)
-			clientSocket.emit('doing-now', value)
-		})
-		redisClient.get('doing-later', (err, value) => {
-			if (err) throw new Error(err)
-			clientSocket.emit('doing-later', value)
-		})
-		redisClient.get('mood', (err, value) => {
-			if (err) throw new Error(err)
-			clientSocket.emit('mood', value)
-		})
-		redisClient.get('anxiety', (err, value) => {
-			if (err) throw new Error(err)
-			clientSocket.emit('anxiety', value)
-		})
-		redisClient.get('energy-physical', (err, value) => {
-			if (err) throw new Error(err)
-			clientSocket.emit('energy-physical', value)
-		})
-		redisClient.get('energy-mental', (err, value) => {
-			if (err) throw new Error(err)
-			clientSocket.emit('energy-mental', value)
-		})
+		const mood = await redisClient.get('mood')
+		clientSocket.emit('mood', mood)
+		const anxiety = await redisClient.get('anxiety')
+		clientSocket.emit('anxiety', anxiety)
+		const mental = await redisClient.get('energy-mental')
+		clientSocket.emit('energy-mental', mental)
+		const physical = await redisClient.get('energy-physical')
+		clientSocket.emit('energy-physical', physical)
+		const doingNow = await redisClient.get('doing-now')
+		clientSocket.emit('doing-now', doingNow)
+		const doingLater = await redisClient.get('doing-later')
+		clientSocket.emit('doing-later', doingLater)
 
-		clientSocket.on('doing-now', (data) =>
-			redisClient.set('doing-now', data, (err) => {
-				if (err) throw new Error(err)
-				clientSocket.broadcast.emit('doing-now', data)
-			}),
-		)
-		clientSocket.on('doing-later', (data) =>
-			redisClient.set('doing-later', data, (err) => {
-				if (err) throw new Error(err)
-				clientSocket.broadcast.emit('doing-later', data)
-			}),
-		)
-		clientSocket.on('mood', (data) =>
-			redisClient.set('mood', data, (err) => {
-				if (err) throw new Error(err)
-				clientSocket.broadcast.emit('mood', data)
-			}),
-		)
-		clientSocket.on('anxiety', (data) =>
-			redisClient.set('anxiety', data, (err) => {
-				if (err) throw new Error(err)
-				clientSocket.broadcast.emit('anxiety', data)
-			}),
-		)
-		clientSocket.on('energy-physical', (data) =>
-			redisClient.set('energy-physical', data, (err) => {
-				if (err) throw new Error(err)
-				clientSocket.broadcast.emit('energy-physical', data)
-			}),
-		)
-		clientSocket.on('energy-mental', (data) =>
-			redisClient.set('energy-mental', data, (err) => {
-				if (err) throw new Error(err)
-				clientSocket.broadcast.emit('energy-mental', data)
-			}),
-		)
-
-		console.log('Socket connection established with client')
 		const follows = await twitchClient.channels.getChannelFollowers(userId)
-		followsString = ''
+		let followsString = ''
 		follows.data.forEach((follow, i) => {
 			if (i > 2) return
 			followsString += `${follow.userDisplayName} • `
@@ -263,10 +228,11 @@ socket.on('connection', async (clientSocket) => {
 		// clientSocket.emit('subscriptions', subscriptions)
 
 		const stream = await twitchClient.streams.getStreamByUserId(userId)
-		console.log(stream)
 		if (stream) {
 			clientSocket.emit('streamTitleChange', stream.title)
 		}
+
+
 
 		clientSocket.on('disconnect', async () => {
 			try {

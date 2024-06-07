@@ -1,9 +1,16 @@
+import { createRequire } from 'module';
+import { fileURLToPath } from 'url';
+import path  from 'path'
+const require = createRequire(import.meta.url);
+const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
+const __dirname = path.dirname(__filename); // get the name of the directory
+
 const express = require('express') // Express web server framework
 const request = require('request') // "Request" library
 const cors = require('cors')
 const stringify = require('querystring').stringify
 const cookieParser = require('cookie-parser')
-const spotifySecrets = require('./spotifySecrets')
+const spotifySecrets = require('./spotifySecrets.cjs')
 
 const clientId = spotifySecrets.clientId
 const clientSecret = spotifySecrets.clientSecret
