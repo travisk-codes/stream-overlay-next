@@ -142,8 +142,8 @@ export default function Overlay() {
       </div>
 			<div id='controls'>
 				<div id='logins'>
-					<a id='twitch-login' href='https://overlay.travisk.dev/twitch-login'>Twitch Login</a>
-					<a id='spotify-login' href='https://overlay.travisk.dev/login'>Spotify Login</a>
+					<a id='twitch-login' href='https://overlay.homaro.co/twitch-login'>Twitch Login</a>
+					<a id='spotify-login' href='https://overlay.homaro.co/login'>Spotify Login</a>
 				</div>
 				<div id='current-status-fields'>
 					<input type='number' min='1' max='6' id='mood' value={currentStatus.mood} onChange={e => {
